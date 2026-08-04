@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>南一評鑑測驗中心-學測征服者挑戰</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            background: radial-gradient(circle at center, #1b2a47 0%, #0c1322 100%);
+            color: #f1f1f1;
+            margin: 0;
+            padding: 20px 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .card {
+            background: #1e1e1e;
+            border: 2px solid #d4af37;
+            border-radius: 16px;
+            max-width: 480px;
+            width: 100%;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+            text-align: center;
+        }
+        h1 { color: #d4af37; font-size: 22px; margin-bottom: 8px; }
+        p.subtitle { color: #aaa; font-size: 14px; margin-top: 0; }
+        
+        .progress-bar {
+            background: #333;
+            height: 8px;
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: #d4af37;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-text {
+            font-size: 17px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-align: left;
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            background: #2b2b2b;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 14px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-size: 15px;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .option-btn:hover {
+            background: #3a3a3a;
+            border-color: #d4af37;
+        }
+
+        /* 頁面分頁切換樣式 */
+        .step-section { display: none; }
+        .step-section.active { display: block; }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0 5px 0;
+            border-radius: 8px;
+            border: 1px solid #d4af37;
+            background: #2b2b2b;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+        }
+        .warning-text {
+            color: #ff9800;
+            font-size: 12px;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        .action-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #d4af37, #aa7c11);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        canvas {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+        .tip { font-size: 13px; color: #ffd700; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <!-- 🏛️ 南一品牌專屬標籤 -->
+    <div style="margin-bottom: 12px;">
+        <span style="background: rgba(212,175,55,0.15); border: 1px solid rgba(212,175,55,0.4); color: #d4af37; padding: 4px 12px; border-radius: 20px; font-size: 12px; letter-spacing: 1px;">
+            🏛️ 南一評鑑測驗中心 × 獨家出品
+        </span>
+    </div>
+
+    <!-- 0. 名字輸入區段（開始前鎖定大名） -->
+    <div id="start-section" class="step-section active">
+        <h1>⚔️ 羅馬征服戰·前進學測試試COME</h1>
+        <p class="subtitle">輸入應援勇者大名，開始挑戰！</p>
+        
+        <input type="text" id="userName" placeholder="請輸入你的名字 / 暱稱" maxlength="8">
+        <p class="warning-text">⚠️ 提示：挑戰結束將根據此名字自動生成「專屬學測證書/戰力卡」，名稱鎖定後無法隨意更換，請斟酌取名喔！</p>
+        
+        <button class="action-btn" onclick="startQuiz()">開始勇者闖關 🚀</button>
+    </div>
+
+    <!-- 1. 測驗關卡區段 -->
+    <div id="quiz-section" class="step-section">
+        <h1>🏛️ 羅馬征服戰·前進學測試試COME</h1>
+        <p class="subtitle">南一評鑑測驗中心 · 專屬戰術驗證</p>
+        
+        <div class="progress-bar">
+            <div id="progress" class="progress-fill"></div>
+        </div>
+
+        <div id="question-box" class="question-text">載入題目中...</div>
+        <div id="options-box"></div>
+    </div>
+
+    <!-- 2. 結果與卡片生成區段 -->
+    <div id="result-section" class="step-section">
+        <h1 id="result-title">測驗計算中...</h1>
+        <p id="result-desc" class="subtitle"></p>
+
+        <canvas id="cardCanvas"></canvas>
+        <p id="saveTip" class="tip">🔥 長按上方圖片即可儲存，快分享至 IG 限動吧！</p>
+        
+        <!-- 社群雪恥/炫耀引導按鈕 -->
+        <div style="margin-top: 15px;">
+            <button class="action-btn" id="shareBtn" onclick="copyShareLink()">
+                📢 複製挑戰連結，去 IG @同學來雪恥！
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* =========================================================
+   🎓 企劃專員編輯區（設定題目與判定分數）
+   ========================================================= */
+
+const PASS_SCORE = 100; 
+
+const quizData = [
+    {
+        question: `Q1國文. 下列是一段古文，依據文意，甲、乙、丙、丁排列順序做適當的是:
+甲、頭其勿逼，逼則使彼實而我虛
+乙、臨時變通，宜勿執一
+丙、續多則勢分，勢分則難救
+丁、虛則易攻，實則難破`,
+        options: [
+            "A. 甲乙丙丁",
+            "B. 甲丁丙乙",
+            "C. 丙甲丁乙",
+            "D. 丙丁乙甲"
+        ],
+        answer: 2 
+    },
+    {
+        question: "Q2英文. Out of programmed loyalty,this household robot is designed to be _______to its owner's voice cpmmands.",
+        options: [
+            "A. allergic",
+            "B. reluctant",
+            "C. obedient",
+            "D. resistant"
+        ],
+        answer: 2 
+    },
+    {
+        question: "Q3自然. 1803年英國人道耳頓(Dalton)提出了原子說，敘述原子勢形成物質的最小粒子不可切割，但隨著科技的進步，我們已知原子是由更微小的粒子所組成。關於組成粒子的各種粒子性質敘述，下列何者錯誤?",
+        options: [
+            "A. 所有原子都具有電子，且電子為負電",
+            "B. 所有原子都具有原子核，且原子核為正電",
+            "C. 所有原子都具有中子，糗中子為電中性",
+            "D. 質子與電子帶電量相同，但電性相異",
+            "E. 同位素之間中子數不同"
+        ],
+        answer: 2 
+    },
+    {
+        question: "Q4社會. 原住民持自製長槍獵捕保育動物被判刑，最高法院:「法律自製獵槍的規定，不應把原住民自製方法為法所限，此判決違法(憲法)保障人權之意旨。對原住民來說，狩獵是自然融入生活的一件事。」請問，最高法院旨意，主要應為下列何者?",
+        options: [
+            "A. 狩獵行為是維持經濟生活的重要活動",
+            "B. 對原住民其本身文化內涵應有相對尊重",
+            "C. 原住民文化應該著重於傳統領域的生活",
+            "D. 法律規範應一視同仁且不因身分而不同"
+        ],
+        answer: 1 
+    },
+    {
+        question: "Q5數學. 甲、乙、......、壬共9人抽籤平分成3隊報名籃球賽，則甲、乙同隊的機率為下列哪一項?",
+        options: [
+            "A. 1/12 ",
+            "B. 1/4 ",
+            "C. 1/3 ",
+            "D. 1/2 ",
+            "E. 2/3 "
+        ],
+        answer: 1 
+    }
+];
+
+/* =========================================================
+   ⚙️ 系統邏輯核心
+   ========================================================= */
+
+let currentQuestion = 0;
+let userScore = 0;
+let isPassed = false;
+let playerName = "";
+
+// 1. 開始測驗：檢查大名並鎖定
+function startQuiz() {
+    const input = document.getElementById('userName');
+    playerName = input.value.trim();
+
+    if (!playerName) {
+        alert('請先輸入你的大名，才能開啟挑戰喔！');
+        return;
+    }
+
+    switchSection('quiz-section');
+    showQuestion();
+}
+
+// 2. 顯示題目
+function showQuestion() {
+    const q = quizData[currentQuestion];
+    document.getElementById('question-box').innerText = q.question;
+    
+    const progressPercent = ((currentQuestion) / quizData.length) * 100;
+    document.getElementById('progress').style.width = progressPercent + '%';
+
+    const optionsBox = document.getElementById('options-box');
+    optionsBox.innerHTML = '';
+    
+    q.options.forEach((optText, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = optText;
+        btn.onclick = () => selectAnswer(index);
+        optionsBox.appendChild(btn);
+    });
+}
+
+// 3. 選擇答案
+function selectAnswer(selectedIndex) {
+    const scorePerQuestion = 100 / quizData.length;
+    if (selectedIndex === quizData[currentQuestion].answer) {
+        userScore += scorePerQuestion;
+    }
+
+    currentQuestion++;
+
+    if (currentQuestion < quizData.length) {
+        showQuestion();
+    } else {
+        finishQuiz();
+    }
+}
+
+// 4. 測驗結束：導向產卡與引導社群標記
+function finishQuiz() {
+    switchSection('result-section');
+
+    isPassed = Math.round(userScore) >= PASS_SCORE;
+
+    const resTitle = document.getElementById('result-title');
+    const resDesc = document.getElementById('result-desc');
+    const shareBtn = document.getElementById('shareBtn');
+
+    if (isPassed) {
+        resTitle.innerText = "🟢 全勝征服！獲得桂冠！";
+        resTitle.style.color = "#4CAF50";
+        resDesc.innerText = `最終得分：${Math.round(userScore)} 分。凱撒軍團承認【${playerName}】的極致戰力！`;
+        shareBtn.innerText = "🏆 複製連結，發 IG 讓同學膜拜！";
+    } else {
+        resTitle.innerText = "🔴 陣亡殘念！戰力提升中！";
+        resTitle.style.color = "#F44336";
+        resDesc.innerText = `最終得分：${Math.round(userScore)} 分。【${playerName}】遭遇勁敵，快叫學霸同學來救援！`;
+        shareBtn.innerText = "⚔️ 複製連結，發 IG @同學來幫忙雪恥！";
+    }
+
+    generateCard();
+}
+
+// 5. 繪製防偽卡片（勝利 0.58 / 失敗 0.52 精準對齊）
+function generateCard() {
+    const canvas = document.getElementById('cardCanvas');
+    const ctx = canvas.getContext('2d');
+    const tip = document.getElementById('saveTip');
+
+    const img = new Image();
+    img.src = (isPassed ? 'success.png' : 'fail.png') + '?v=' + Date.now();
+
+    img.onload = function() {
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 1. 繪製背景底圖
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // 2. 根據勝負自動排版位置
+        let nameYPosition;
+
+        if (isPassed) {
+            ctx.fillStyle = '#4A2E00';
+            nameYPosition = canvas.height * 0.58; 
+        } else {
+            ctx.fillStyle = '#222222';
+            nameYPosition = canvas.height * 0.52; 
+        }
+
+        // 3. 設定字體規格
+        const fontSize = Math.round(canvas.height * 0.048);
+        ctx.font = `bold ${fontSize}px "PingFang TC", "Microsoft JhengHei", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // 4. 印出鎖定的大名
+        ctx.fillText(playerName, canvas.width / 2, nameYPosition);
+
+        canvas.style.display = 'block';
+        if (tip) tip.style.display = 'block';
+    };
+
+    img.onerror = function() {
+        alert('圖片載入失敗！請確認根目錄是否有 success.png 與 fail.png 檔案！');
+    };
+}
+
+// 6. 複製分享連結函式
+function copyShareLink() {
+    const dummy = document.createElement('input');
+    const text = window.location.href;
+    
+    document.body.appendChild(dummy);
+    dummy.value = text;
+    dummy.select();
+    document.execCommand('copy');
+    document.body.removeChild(dummy);
+    
+    alert('✅ 已複製挑戰連結！快長按上方圖片儲存卡片，發到 IG 限動 @你的戰友來幫忙吧！');
+}
+
+// 輔助函式：切換步驟區段
+function switchSection(sectionId) {
+    document.querySelectorAll('.step-section').forEach(sec => sec.classList.remove('active'));
+    document.getElementById(sectionId).classList.add('active');
+}
+</script>
+
+</body>
+</html>
