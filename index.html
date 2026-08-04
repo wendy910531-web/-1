@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>南一評鑑測驗中心-學測征服者挑戰</title>
+    <!-- 📸 引入 html2canvas 網頁截圖套件 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * { box-sizing: border-box; }
         body {
@@ -146,7 +148,7 @@
         .question-img-container {
             width: 100%;
             margin: 10px 0 15px 0;
-            display: none; /* 預設不顯示 */
+            display: none;
         }
         .question-img-container img {
             max-width: 100%;
@@ -213,7 +215,6 @@
             margin-top: 15px;
             display: none;
         }
-        .tip { font-size: 13px; color: #ffd700; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
@@ -275,23 +276,22 @@
 
     <!-- 2. 結果與卡片生成區段 -->
     <div id="result-section" class="step-section">
-    <h1 id="result-title">遠征結算中...</h1>
-    <p id="result-desc" class="subtitle"></p>
+        <h1 id="result-title">遠征結算中...</h1>
+        <p id="result-desc" class="subtitle"></p>
 
-    <canvas id="cardCanvas"></canvas>
-    <p id="saveTip" class="tip">🔥 也可以長按上方圖片進行儲存喔！</p>
-    
-    <div style="margin-top: 15px;">
-        <!-- 📥 新增這顆下載按鈕 -->
-        <button class="action-btn" id="downloadBtn" onclick="downloadCard()" style="margin-bottom: 10px; background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white;">
-            📥 下載專屬戰績卡圖片
-        </button>
+        <canvas id="cardCanvas"></canvas>
+        
+        <div style="margin-top: 15px;">
+            <!-- 📥 下載整個黃框框圖片按鈕 -->
+            <button class="action-btn" id="downloadBtn" onclick="downloadCard()" style="margin-bottom: 10px; background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white;">
+                📥 下載專屬戰績卡圖片
+            </button>
 
-        <button class="action-btn" id="shareBtn" onclick="copyShareLink()">
-            📢 複製挑戰連結，去 IG @同學來雪恥！
-        </button>
+            <button class="action-btn" id="shareBtn" onclick="copyShareLink()">
+                📢 複製挑戰連結，去 IG @同學來雪恥！
+            </button>
+        </div>
     </div>
-</div>
 </div>
 
 <script>
@@ -308,7 +308,7 @@ const quizData = [
 乙、臨時變通，宜勿執一
 丙、續多則勢分，勢分則難救
 丁、虛則易攻，實則難破`,
-        image: null, // 沒有圖片寫 null
+        image: null,
         options: [
             "A. 甲乙丙丁",
             "B. 甲丁丙乙",
@@ -342,7 +342,7 @@ const quizData = [
     },
     {
         question: "Q4圖是以臺灣為中心等具投影地圖，下列有關此圖的敘述何者正確?",
-        image: "q4圖.png", // 👈 請將 GitHub 上的圖片檔名改為 q4.png 喔！
+        image: "q4.png", 
         options: [
             "A. 由圖可知距離臺灣最遠處為南美洲",
             "B. 因距離維持正確比例，圖中各大洲的面積也維持正確比例",
@@ -397,7 +397,7 @@ function showQuestion() {
     const qImg = document.getElementById('question-img');
     
     if (q.image) {
-        qImg.src = q.image + '?v=' + Date.now(); // 防快取
+        qImg.src = q.image + '?v=' + Date.now();
         imgBox.style.display = 'block';
     } else {
         imgBox.style.display = 'none';
@@ -486,7 +486,6 @@ function finishQuiz() {
 function generateCard() {
     const canvas = document.getElementById('cardCanvas');
     const ctx = canvas.getContext('2d');
-    const tip = document.getElementById('saveTip');
 
     const img = new Image();
     img.src = (isPassed ? 'success.png' : 'fail.png') + '?v=' + Date.now();
@@ -515,12 +514,45 @@ function generateCard() {
         ctx.fillText(playerName, canvas.width / 2, nameYPosition);
 
         canvas.style.display = 'block';
-        if (tip) tip.style.display = 'block';
     };
 
     img.onerror = function() {
         alert('圖片載入失敗！請確認根目錄是否有 success.png 與 fail.png 檔案！');
     };
+}
+
+// 📥 截取整個黃框框 (.card) 並下載為圖片
+function downloadCard() {
+    const cardElement = document.querySelector('.card');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const shareBtn = document.getElementById('shareBtn');
+
+    // 1. 隱藏按鈕，避免按鈕被截圖進去
+    if (downloadBtn) downloadBtn.style.display = 'none';
+    if (shareBtn) shareBtn.style.display = 'none';
+
+    // 2. 拍攝黃框框
+    html2canvas(cardElement, {
+        backgroundColor: '#1e1e1e', 
+        scale: 2,                   
+        useCORS: true               
+    }).then(canvas => {
+        // 3. 恢復按鈕
+        if (downloadBtn) downloadBtn.style.display = 'block';
+        if (shareBtn) shareBtn.style.display = 'block';
+
+        // 4. 下載圖片
+        const link = document.createElement('a');
+        link.download = (playerName || '羅馬將軍') + '_遠征完整戰績卡.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }).catch(err => {
+        console.error('截圖失敗:', err);
+        alert('下載失敗，請重新嘗試！');
+        
+        if (downloadBtn) downloadBtn.style.display = 'block';
+        if (shareBtn) shareBtn.style.display = 'block';
+    });
 }
 
 function copyShareLink() {
@@ -533,29 +565,12 @@ function copyShareLink() {
     document.execCommand('copy');
     document.body.removeChild(dummy);
     
-    alert('✅ 已複製挑戰連結！快長按上方圖片儲存卡片，發到 IG 限動 @你的戰友來幫忙吧！');
+    alert('✅ 已複製挑戰連結！快發到 IG @你的戰友來幫忙吧！');
 }
 
 function switchSection(sectionId) {
     document.querySelectorAll('.step-section').forEach(sec => sec.classList.remove('active'));
     document.getElementById(sectionId).classList.add('active');
-}
-    // 📥 下載圖片函數
-function downloadCard() {
-    const canvas = document.getElementById('cardCanvas');
-    
-    // 建立一個隱藏的 <a> 標籤來觸發下載
-    const link = document.createElement('a');
-    
-    // 將檔名設定為「將軍名_遠征戰績卡.png」
-    const fileName = (playerName || '羅馬將軍') + '_遠征戰績卡.png';
-    link.download = fileName;
-    
-    // 將 Canvas 轉成圖片 URL
-    link.href = canvas.toDataURL('image/png');
-    
-    // 觸發點擊下載
-    link.click();
 }
 </script>
 
