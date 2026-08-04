@@ -30,18 +30,112 @@
         h1 { color: #d4af37; font-size: 22px; margin-bottom: 8px; }
         p.subtitle { color: #aaa; font-size: 14px; margin-top: 0; }
         
-        .progress-bar {
+        /* 🗺️ 羅馬征服地圖樣式 */
+        .map-container {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 25px 0 15px 0;
+            padding: 0 10px;
+        }
+        /* 連接道路底線 */
+        .map-line-bg {
+            position: absolute;
+            top: 50%;
+            left: 20px;
+            right: 20px;
+            height: 4px;
             background: #333;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+        /* 進度金色道路 */
+        .map-line-progress {
+            position: absolute;
+            top: 50%;
+            left: 20px;
+            height: 4px;
+            background: linear-gradient(90deg, #d4af37, #ffd700);
+            transform: translateY(-50%);
+            width: 0%;
+            transition: width 0.4s ease;
+            z-index: 1;
+            box-shadow: 0 0 8px #d4af37;
+        }
+        /* 城池節點 */
+        .map-node {
+            position: relative;
+            z-index: 2;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #2b2b2b;
+            border: 2px solid #555;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #888;
+            transition: all 0.3s ease;
+        }
+        /* 城池狀態變化 */
+        .map-node.active {
+            border-color: #ffd700;
+            background: #4a3b10;
+            color: #ffd700;
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
+            transform: scale(1.15);
+            animation: pulse 1.5s infinite;
+        }
+        .map-node.passed-correct {
+            border-color: #4CAF50;
+            background: #1b4721;
+            color: #fff;
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+        }
+        .map-node.passed-wrong {
+            border-color: #f44336;
+            background: #471b1b;
+            color: #ffaaaa;
+        }
+
+        /* 呼吸發光效果 */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+        }
+
+        /* ⚔️ 軍隊士氣條 */
+        .morale-box {
+            background: #151d2a;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        .morale-header {
+            display: flex;
+            justify-content: space-between;
+            color: #d4af37;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+        .morale-bar-bg {
+            background: #222;
             height: 8px;
             border-radius: 4px;
-            margin: 15px 0;
             overflow: hidden;
         }
-        .progress-fill {
-            background: #d4af37;
+        .morale-fill {
+            background: linear-gradient(90deg, #aa7c11, #ffd700);
             height: 100%;
-            width: 0%;
-            transition: width 0.3s ease;
+            width: 100%;
+            transition: width 0.4s ease;
         }
 
         .question-text {
@@ -126,22 +220,40 @@
 
     <!-- 0. 名字輸入區段（開始前鎖定大名） -->
     <div id="start-section" class="step-section active">
-        <h1>⚔️ 羅馬征服戰·前進學測試試COME</h1>
-        <p class="subtitle">輸入應援勇者大名，開始挑戰！</p>
+        <h1>⚔️ 羅馬遠征·學測五大城池征服戰</h1>
+        <p class="subtitle">率領軍隊連破五關，攻下學測榮耀！</p>
         
-        <input type="text" id="userName" placeholder="請輸入你的名字 / 暱稱" maxlength="8">
+        <input type="text" id="userName" placeholder="請輸入將軍大名 / 暱稱" maxlength="8">
         <p class="warning-text">⚠️ 提示：挑戰結束將根據此名字自動生成「專屬學測證書/戰力卡」，名稱鎖定後無法隨意更換，請斟酌取名喔！</p>
         
-        <button class="action-btn" onclick="startQuiz()">開始勇者闖關 🚀</button>
+        <button class="action-btn" onclick="startQuiz()">率軍開戰 🚀</button>
     </div>
 
     <!-- 1. 測驗關卡區段 -->
     <div id="quiz-section" class="step-section">
-        <h1>🏛️ 羅馬征服戰·前進學測試試COME</h1>
-        <p class="subtitle">南一評鑑測驗中心 · 專屬戰術驗證</p>
+        <h1>🗺️ 遠征進度地圖</h1>
         
-        <div class="progress-bar">
-            <div id="progress" class="progress-fill"></div>
+        <!-- 🗺️ 五大城池進度路線圖 -->
+        <div class="map-container">
+            <div class="map-line-bg"></div>
+            <div id="map-progress" class="map-line-progress"></div>
+            
+            <div class="map-node active" id="node-0">🏰<br>國</div>
+            <div class="map-node" id="node-1">🏰<br>英</div>
+            <div class="map-node" id="node-2">🏰<br>自</div>
+            <div class="map-node" id="node-3">🏰<br>社</div>
+            <div class="map-node" id="node-4">🏰<br>數</div>
+        </div>
+
+        <!-- ⚔️ 士氣條 UI -->
+        <div class="morale-box">
+            <div class="morale-header">
+                <span id="morale-title">🚩 羅馬遠征軍士氣</span>
+                <span id="morale-num">100%</span>
+            </div>
+            <div class="morale-bar-bg">
+                <div id="morale-fill" class="morale-fill"></div>
+            </div>
         </div>
 
         <div id="question-box" class="question-text">載入題目中...</div>
@@ -150,7 +262,7 @@
 
     <!-- 2. 結果與卡片生成區段 -->
     <div id="result-section" class="step-section">
-        <h1 id="result-title">測驗計算中...</h1>
+        <h1 id="result-title">遠征結算中...</h1>
         <p id="result-desc" class="subtitle"></p>
 
         <canvas id="cardCanvas"></canvas>
@@ -174,7 +286,7 @@ const PASS_SCORE = 100;
 
 const quizData = [
     {
-        question: `Q1國文. 下列是一段古文，依據文意，甲、乙、丙、丁排列順序做適當的是:
+        question: `Q1國文城池. 下列是一段古文，依據文意，甲、乙、丙、丁排列順序做適當的是:
 甲、頭其勿逼，逼則使彼實而我虛
 乙、臨時變通，宜勿執一
 丙、續多則勢分，勢分則難救
@@ -188,7 +300,7 @@ const quizData = [
         answer: 2 
     },
     {
-        question: "Q2英文. Out of programmed loyalty,this household robot is designed to be _______to its owner's voice cpmmands.",
+        question: "Q2英文城池. Out of programmed loyalty,this household robot is designed to be _______to its owner's voice cpmmands.",
         options: [
             "A. allergic",
             "B. reluctant",
@@ -198,7 +310,7 @@ const quizData = [
         answer: 2 
     },
     {
-        question: "Q3自然. 1803年英國人道耳頓(Dalton)提出了原子說，敘述原子勢形成物質的最小粒子不可切割，但隨著科技的進步，我們已知原子是由更微小的粒子所組成。關於組成粒子的各種粒子性質敘述，下列何者錯誤?",
+        question: "Q3自然城池. 1803年英國人道耳頓(Dalton)提出了原子說，敘述原子勢形成物質的最小粒子不可切割，但隨著科技的進步，我們已知原子是由更微小的粒子所組成。關於組成粒子的各種粒子性質敘述，下列何者錯誤?",
         options: [
             "A. 所有原子都具有電子，且電子為負電",
             "B. 所有原子都具有原子核，且原子核為正電",
@@ -209,7 +321,7 @@ const quizData = [
         answer: 2 
     },
     {
-        question: "Q4社會. 原住民持自製長槍獵捕保育動物被判刑，最高法院:「法律自製獵槍的規定，不應把原住民自製方法為法所限，此判決違法(憲法)保障人權之意旨。對原住民來說，狩獵是自然融入生活的一件事。」請問，最高法院旨意，主要應為下列何者?",
+        question: "Q4社會城池. 原住民持自製長槍獵捕保育動物被判刑，最高法院:「法律自製獵槍的規定，不應把原住民自製方法為法所限，此判決違法(憲法)保障人權之意旨。對原住民來說，狩獵是自然融入生活的一件事。」請問，最高法院旨意，主要應為下列何者?",
         options: [
             "A. 狩獵行為是維持經濟生活的重要活動",
             "B. 對原住民其本身文化內涵應有相對尊重",
@@ -219,7 +331,7 @@ const quizData = [
         answer: 1 
     },
     {
-        question: "Q5數學. 甲、乙、......、壬共9人抽籤平分成3隊報名籃球賽，則甲、乙同隊的機率為下列哪一項?",
+        question: "Q5數學城池. 甲、乙、......、壬共9人抽籤平分成3隊報名籃球賽，則甲、乙同隊的機率為下列哪一項?",
         options: [
             "A. 1/12 ",
             "B. 1/4 ",
@@ -237,6 +349,7 @@ const quizData = [
 
 let currentQuestion = 0;
 let userScore = 0;
+let morale = 100;
 let isPassed = false;
 let playerName = "";
 
@@ -246,7 +359,7 @@ function startQuiz() {
     playerName = input.value.trim();
 
     if (!playerName) {
-        alert('請先輸入你的大名，才能開啟挑戰喔！');
+        alert('請先輸入將軍大名，才能開啟征服之旅！');
         return;
     }
 
@@ -254,13 +367,20 @@ function startQuiz() {
     showQuestion();
 }
 
-// 2. 顯示題目
+// 2. 顯示題目與更新地圖當前城池
 function showQuestion() {
     const q = quizData[currentQuestion];
     document.getElementById('question-box').innerText = q.question;
-    
-    const progressPercent = ((currentQuestion) / quizData.length) * 100;
-    document.getElementById('progress').style.width = progressPercent + '%';
+
+    // 更新地圖當前焦點
+    for(let i=0; i<5; i++){
+        const node = document.getElementById(`node-${i}`);
+        if(i === currentQuestion) {
+            node.classList.add('active');
+        } else if(i > currentQuestion) {
+            node.className = 'map-node';
+        }
+    }
 
     const optionsBox = document.getElementById('options-box');
     optionsBox.innerHTML = '';
@@ -274,19 +394,39 @@ function showQuestion() {
     });
 }
 
-// 3. 選擇答案
+// 3. 選擇答案並推進地圖光軌
 function selectAnswer(selectedIndex) {
-    const scorePerQuestion = 100 / quizData.length;
+    const scorePerQ = 100 / quizData.length;
+    const currentNode = document.getElementById(`node-${currentQuestion}`);
+    
+    currentNode.classList.remove('active');
+
     if (selectedIndex === quizData[currentQuestion].answer) {
-        userScore += scorePerQuestion;
+        userScore += scorePerQ;
+        currentNode.classList.add('passed-correct');
+        currentNode.innerHTML = "🚩<br>攻下";
+    } else {
+        morale -= 20;
+        if(morale < 0) morale = 0;
+        currentNode.classList.add('passed-wrong');
+        currentNode.innerHTML = "💥<br>失守";
     }
+
+    // 更新軍隊士氣條
+    document.getElementById('morale-fill').style.width = morale + '%';
+    document.getElementById('morale-num').innerText = morale + '%';
+
+    // 推進金色路線光軌
+    const mapProgress = document.getElementById('map-progress');
+    const progressPercent = ((currentQuestion + 1) / (quizData.length - 1)) * 100;
+    mapProgress.style.width = Math.min(progressPercent, 100) + '%';
 
     currentQuestion++;
 
     if (currentQuestion < quizData.length) {
         showQuestion();
     } else {
-        finishQuiz();
+        setTimeout(finishQuiz, 400);
     }
 }
 
@@ -301,21 +441,21 @@ function finishQuiz() {
     const shareBtn = document.getElementById('shareBtn');
 
     if (isPassed) {
-        resTitle.innerText = "🟢 全勝征服！獲得桂冠！";
+        resTitle.innerText = "🟢 凱旋歸來！攻下五大城池！";
         resTitle.style.color = "#4CAF50";
-        resDesc.innerText = `最終得分：${Math.round(userScore)} 分。凱撒軍團承認【${playerName}】的極致戰力！`;
+        resDesc.innerText = `最終士氣：${morale}%！凱撒軍團承認【${playerName}】將軍的極致戰略！`;
         shareBtn.innerText = "🏆 複製連結，發 IG 讓同學膜拜！";
     } else {
-        resTitle.innerText = "🔴 陣亡殘念！戰力提升中！";
+        resTitle.innerText = "🔴 遠征受挫！軍隊亟需支援！";
         resTitle.style.color = "#F44336";
-        resDesc.innerText = `最終得分：${Math.round(userScore)} 分。【${playerName}】遭遇勁敵，快叫學霸同學來救援！`;
-        shareBtn.innerText = "⚔️ 複製連結，發 IG @同學來幫忙雪恥！";
+        resDesc.innerText = `最終士氣殘存 ${morale}%！【${playerName}】將軍遭遇勁敵，快叫學霸同學來救援！`;
+        shareBtn.innerText = "⚔️ 複製連結，發 IG @同學來支援攻城！";
     }
 
     generateCard();
 }
 
-// 5. 繪製防偽卡片（勝利 0.58 / 失敗 0.52 精準對齊）
+// 5. 繪製防偽卡片
 function generateCard() {
     const canvas = document.getElementById('cardCanvas');
     const ctx = canvas.getContext('2d');
