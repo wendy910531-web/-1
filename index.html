@@ -275,18 +275,23 @@
 
     <!-- 2. 結果與卡片生成區段 -->
     <div id="result-section" class="step-section">
-        <h1 id="result-title">遠征結算中...</h1>
-        <p id="result-desc" class="subtitle"></p>
+    <h1 id="result-title">遠征結算中...</h1>
+    <p id="result-desc" class="subtitle"></p>
 
-        <canvas id="cardCanvas"></canvas>
-        <p id="saveTip" class="tip">🔥 長按上方圖片即可儲存，快分享至 IG 限動吧！</p>
-        
-        <div style="margin-top: 15px;">
-            <button class="action-btn" id="shareBtn" onclick="copyShareLink()">
-                📢 複製挑戰連結，去 IG @同學來雪恥！
-            </button>
-        </div>
+    <canvas id="cardCanvas"></canvas>
+    <p id="saveTip" class="tip">🔥 也可以長按上方圖片進行儲存喔！</p>
+    
+    <div style="margin-top: 15px;">
+        <!-- 📥 新增這顆下載按鈕 -->
+        <button class="action-btn" id="downloadBtn" onclick="downloadCard()" style="margin-bottom: 10px; background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white;">
+            📥 下載專屬戰績卡圖片
+        </button>
+
+        <button class="action-btn" id="shareBtn" onclick="copyShareLink()">
+            📢 複製挑戰連結，去 IG @同學來雪恥！
+        </button>
     </div>
+</div>
 </div>
 
 <script>
@@ -534,6 +539,23 @@ function copyShareLink() {
 function switchSection(sectionId) {
     document.querySelectorAll('.step-section').forEach(sec => sec.classList.remove('active'));
     document.getElementById(sectionId).classList.add('active');
+}
+    // 📥 下載圖片函數
+function downloadCard() {
+    const canvas = document.getElementById('cardCanvas');
+    
+    // 建立一個隱藏的 <a> 標籤來觸發下載
+    const link = document.createElement('a');
+    
+    // 將檔名設定為「將軍名_遠征戰績卡.png」
+    const fileName = (playerName || '羅馬將軍') + '_遠征戰績卡.png';
+    link.download = fileName;
+    
+    // 將 Canvas 轉成圖片 URL
+    link.href = canvas.toDataURL('image/png');
+    
+    // 觸發點擊下載
+    link.click();
 }
 </script>
 
