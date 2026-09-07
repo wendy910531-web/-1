@@ -519,7 +519,7 @@ function generateCard() {
         // 限制文字的最大總寬度為石板框寬度的 65% (避免壓到邊框)
         const maxWidth = canvas.width * 0.65; 
         
-        // 預設最大字體 (佔圖片高度的 9.5%，大大放大)
+        // 預設最大字體 (佔圖片高度的 9.5%)
         let fontSize = Math.round(canvas.height * 0.095); 
         ctx.font = `bold ${fontSize}px "PingFang TC", "Microsoft JhengHei", sans-serif`;
 
@@ -530,18 +530,18 @@ function generateCard() {
         }
 
         // =========================================================
-        // 🛠️ 3. 計算渲染位置 (居中於紅框中心)
+        // 🛠️ 3. 計算渲染位置 (再往下一點點)
         // =========================================================
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
-        // 垂直中心移至紅框區域 (圖片高度 62.5% 處)
-        const nameYPosition = canvas.height * 0.625; 
+        // 📍 位置調整：從原本 0.625 往下移至 0.67 (67% 高度處)
+        const nameYPosition = canvas.height * 0.67; 
         
-        // 繪製文字 (包含陰影效果)
+        // 繪製文字
         ctx.fillText(playerName, canvas.width / 2, nameYPosition);
 
-        // 重置陰影設定，避免影響後續畫布操作
+        // 重置陰影設定
         ctx.shadowColor = 'transparent';
 
         canvas.style.display = 'block';
