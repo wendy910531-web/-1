@@ -488,53 +488,62 @@ function generateCard() {
     const ctx = canvas.getContext('2d');
 
     const img = new Image();
-    // 📸 加上時間戳記避免圖片快取問題
     img.src = (isPassed ? 'success.png' : 'fail.png') + '?v=' + Date.now();
 
     img.onload = function() {
-        // 1. 設定 Canvas 尺寸與圖片一致
+        // 1. 設定 Canvas 尺寸
         canvas.width = img.naturalWidth || img.width;
         canvas.height = img.naturalHeight || img.height;
         
-        // 2. 清除並繪製背景圖
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
         // =========================================================
-        // 🛠️ 核心修改區域：調整名字位置、大小與顏色
+        // 🛠️ 1. 設定文字陰影與質感描邊
         // =========================================================
-        
-        // --- A. 設定名字顏色 (成功黑，失敗白) ---
         if (isPassed) {
-            // 成功：深黑色 (或依原圖風格微調，例如 #1a1a1a)
-            ctx.fillStyle = '#000000'; 
+            ctx.fillStyle = '#000000';      // 成功：黑色字
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)'; // 成功：白色發光/陰影背景
+            ctx.shadowBlur = 10;            // 陰影模糊度
         } else {
-            // 失敗：純白色 (配合失守圖的石板框)
-            ctx.fillStyle = '#FFFFFF'; 
+            ctx.fillStyle = '#FFFFFF';      // 失敗：白色字
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.9)'; // 失敗：黑色深陰影
+            ctx.shadowBlur = 12;            // 陰影模糊度
+        }
+        ctx.shadowOffsetX = 2; // 陰影 X 軸偏移
+        ctx.shadowOffsetY = 4; // 陰影 Y 軸偏移
+
+        // =========================================================
+        // 🛠️ 2. 自動計算字體大小 (字數多自動縮小)
+        // =========================================================
+        // 限制文字的最大總寬度為石板框寬度的 65% (避免壓到邊框)
+        const maxWidth = canvas.width * 0.65; 
+        
+        // 預設最大字體 (佔圖片高度的 9.5%，大大放大)
+        let fontSize = Math.round(canvas.height * 0.095); 
+        ctx.font = `bold ${fontSize}px "PingFang TC", "Microsoft JhengHei", sans-serif`;
+
+        // 如果名字總長度超過框框寬度，自動遞減字體大小直到容納為止
+        while (ctx.measureText(playerName).width > maxWidth && fontSize > 15) {
+            fontSize -= 2;
+            ctx.font = `bold ${fontSize}px "PingFang TC", "Microsoft JhengHei", sans-serif`;
         }
 
-        // --- B. 設定文字樣式 (放大字體) ---
-        // 將字體大小倍率從 0.048 提高到 0.065 (放大約 35%)
-        const fontSize = Math.round(canvas.height * 0.065); 
-        ctx.font = `bold ${fontSize}px "PingFang TC", "Microsoft JhengHei", sans-serif`;
-        
-        // --- C. 設定對齊方式 (居中) ---
+        // =========================================================
+        // 🛠️ 3. 計算渲染位置 (居中於紅框中心)
+        // =========================================================
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle'; // 以文字垂直中心點對齊
-
-        // --- D. 計算並繪製名字位置 (置中於石板框內) ---
-        // 根據您提供的【失守】截圖，石板框的垂直中心大約在圖片高度的 63% 處。
-        // 這個位置不論成功或失敗的圖應該都通用。
-        const nameYPosition = canvas.height * 0.63; 
+        ctx.textBaseline = 'middle';
         
-        // 繪製文字
+        // 垂直中心移至紅框區域 (圖片高度 62.5% 處)
+        const nameYPosition = canvas.height * 0.625; 
+        
+        // 繪製文字 (包含陰影效果)
         ctx.fillText(playerName, canvas.width / 2, nameYPosition);
 
-        // =========================================================
-        // 🛠️ 修改結束
-        // =========================================================
+        // 重置陰影設定，避免影響後續畫布操作
+        ctx.shadowColor = 'transparent';
 
-        // 3. 顯示 Canvas
         canvas.style.display = 'block';
     };
 
@@ -542,7 +551,6 @@ function generateCard() {
         alert('圖片載入失敗！請確認根目錄是否有 success.png 與 fail.png 檔案！');
     };
 }
-
 // 📥 截取整個黃框框 (.card) 並下載為圖片
 function downloadCard() {
     const cardElement = document.querySelector('.card');
