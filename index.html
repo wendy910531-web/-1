@@ -491,54 +491,48 @@ function generateCard() {
     img.src = (isPassed ? 'success.png' : 'fail.png') + '?v=' + Date.now();
 
     img.onload = function() {
-        // 1. 設定 Canvas 尺寸
         canvas.width = img.naturalWidth || img.width;
         canvas.height = img.naturalHeight || img.height;
         
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // =========================================================
-        // 🛠️ 1. 設定文字陰影與質感描邊
-        // =========================================================
-        if (isPassed) {
-            ctx.fillStyle = '#000000';      // 成功：黑色字
-            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)'; // 成功：白色發光/陰影背景
-            ctx.shadowBlur = 10;            // 陰影模糊度
-        } else {
-            ctx.fillStyle = '#FFFFFF';      // 失敗：白色字
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.9)'; // 失敗：黑色深陰影
-            ctx.shadowBlur = 12;            // 陰影模糊度
-        }
-        ctx.shadowOffsetX = 2; // 陰影 X 軸偏移
-        ctx.shadowOffsetY = 4; // 陰影 Y 軸偏移
+        // 1. 分別設定成功 / 失敗的高度與陰影
+        let nameYPosition;
 
-        // =========================================================
-        // 🛠️ 2. 自動計算字體大小 (字數多自動縮小)
-        // =========================================================
-        // 限制文字的最大總寬度為石板框寬度的 65% (避免壓到邊框)
-        const maxWidth = canvas.width * 0.65; 
+        if (isPassed) {
+            ctx.fillStyle = '#000000';                      // 成功：黑色字
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)'; // 成功：白色陰影/發光
+            ctx.shadowBlur = 8;
+            nameYPosition = canvas.height * 0.62;          // 成功版中線高度
+        } else {
+            ctx.fillStyle = '#FFFFFF';                      // 失敗：白色字
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';         // 失敗：黑色深陰影
+            ctx.shadowBlur = 12;
+            // 📍 失敗版微調：再往下移一些些，讓紅線對齊文字中線
+            nameYPosition = canvas.height * 0.635; 
+        }
         
-        // 預設最大字體 (佔圖片高度的 9.5%)
-        let fontSize = Math.round(canvas.height * 0.095); 
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 3;
+
+        // 2. 自動計算字體大小 (字數多自動遞減縮小)
+        // 限制最大渲染寬度為石板框寬度的 58% (留出安全邊距)
+        const maxWidth = canvas.width * 0.58; 
+        
+        // 預設最大字體 (約佔圖片高度 8.5%)
+        let fontSize = Math.round(canvas.height * 0.085); 
         ctx.font = `bold ${fontSize}px "PingFang TC", "Microsoft JhengHei", sans-serif`;
 
-        // 如果名字總長度超過框框寬度，自動遞減字體大小直到容納為止
-        while (ctx.measureText(playerName).width > maxWidth && fontSize > 15) {
+        // 只要文字超過安全寬度，就自動縮小字體直到塞得下
+        while (ctx.measureText(playerName).width > maxWidth && fontSize > 16) {
             fontSize -= 2;
             ctx.font = `bold ${fontSize}px "PingFang TC", "Microsoft JhengHei", sans-serif`;
         }
 
-        // =========================================================
-        // 🛠️ 3. 計算渲染位置 (再往下一點點)
-        // =========================================================
+        // 3. 渲染文字 (置中與垂直中線對齊)
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        
-        // 📍 位置調整：從原本 0.625 往下移至 0.67 (67% 高度處)
-        const nameYPosition = canvas.height * 0.67; 
-        
-        // 繪製文字
         ctx.fillText(playerName, canvas.width / 2, nameYPosition);
 
         // 重置陰影設定
@@ -551,6 +545,7 @@ function generateCard() {
         alert('圖片載入失敗！請確認根目錄是否有 success.png 與 fail.png 檔案！');
     };
 }
+    
 // 📥 截取整個黃框框 (.card) 並下載為圖片
 function downloadCard() {
     const cardElement = document.querySelector('.card');
