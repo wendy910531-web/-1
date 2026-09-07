@@ -488,31 +488,53 @@ function generateCard() {
     const ctx = canvas.getContext('2d');
 
     const img = new Image();
+    // 📸 加上時間戳記避免圖片快取問題
     img.src = (isPassed ? 'success.png' : 'fail.png') + '?v=' + Date.now();
 
     img.onload = function() {
+        // 1. 設定 Canvas 尺寸與圖片一致
         canvas.width = img.naturalWidth || img.width;
         canvas.height = img.naturalHeight || img.height;
+        
+        // 2. 清除並繪製背景圖
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        let nameYPosition;
+        // =========================================================
+        // 🛠️ 核心修改區域：調整名字位置、大小與顏色
+        // =========================================================
+        
+        // --- A. 設定名字顏色 (成功黑，失敗白) ---
         if (isPassed) {
-            ctx.fillStyle = '#4A2E00';
-            nameYPosition = canvas.height * 0.58; 
+            // 成功：深黑色 (或依原圖風格微調，例如 #1a1a1a)
+            ctx.fillStyle = '#000000'; 
         } else {
-            ctx.fillStyle = '#222222';
-            nameYPosition = canvas.height * 0.52; 
+            // 失敗：純白色 (配合失守圖的石板框)
+            ctx.fillStyle = '#FFFFFF'; 
         }
 
-        const fontSize = Math.round(canvas.height * 0.048);
+        // --- B. 設定文字樣式 (放大字體) ---
+        // 將字體大小倍率從 0.048 提高到 0.065 (放大約 35%)
+        const fontSize = Math.round(canvas.height * 0.065); 
         ctx.font = `bold ${fontSize}px "PingFang TC", "Microsoft JhengHei", sans-serif`;
+        
+        // --- C. 設定對齊方式 (居中) ---
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+        ctx.textBaseline = 'middle'; // 以文字垂直中心點對齊
 
+        // --- D. 計算並繪製名字位置 (置中於石板框內) ---
+        // 根據您提供的【失守】截圖，石板框的垂直中心大約在圖片高度的 63% 處。
+        // 這個位置不論成功或失敗的圖應該都通用。
+        const nameYPosition = canvas.height * 0.63; 
+        
+        // 繪製文字
         ctx.fillText(playerName, canvas.width / 2, nameYPosition);
 
+        // =========================================================
+        // 🛠️ 修改結束
+        // =========================================================
+
+        // 3. 顯示 Canvas
         canvas.style.display = 'block';
     };
 
