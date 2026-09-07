@@ -504,13 +504,13 @@ function generateCard() {
             ctx.fillStyle = '#000000';                      // 成功：黑色字
             ctx.shadowColor = 'rgba(255, 255, 255, 0.8)'; // 成功：白色陰影/發光
             ctx.shadowBlur = 8;
-            nameYPosition = canvas.height * 0.62;          // 成功版中線高度
+            nameYPosition = canvas.height * 0.65;          // 成功版中線高度
         } else {
             ctx.fillStyle = '#FFFFFF';                      // 失敗：白色字
             ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';         // 失敗：黑色深陰影
             ctx.shadowBlur = 12;
             // 📍 失敗版微調：再往下移一些些，讓紅線對齊文字中線
-            nameYPosition = canvas.height * 0.635; 
+            nameYPosition = canvas.height * 0.665; 
         }
         
         ctx.shadowOffsetX = 2;
